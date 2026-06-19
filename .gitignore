@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+
+# Env / secrets
+.env
+.env.local
+*.key
+
+# Data (trop volumineux pour git)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+ingestion/pubmed/raw/*
+ingestion/pubmed/processed/*
+ingestion/guidelines/raw_pdfs/*
+ingestion/guidelines/processed/*
+
+# IDE
+.vscode/
+.idea/
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform.lock.hcl
+
+# Node (frontend)
+frontend/node_modules/
+frontend/dist/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
