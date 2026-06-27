@@ -7,7 +7,6 @@ Usage:
 
 import os
 
-import pandas as pd
 from datasets import Dataset
 from dotenv import load_dotenv
 from langchain_ollama import ChatOllama, OllamaEmbeddings
@@ -20,6 +19,7 @@ from ragas.metrics import (
     context_recall,
     faithfulness,
 )
+from ragas.run_config import RunConfig
 
 from rag.evaluation.dataset import EVAL_SET
 from rag.pipeline import answer_question
@@ -32,12 +32,19 @@ OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "bge-m3")
 
 RESULTS_PATH = "rag/evaluation/results.csv"
 
+# Config adaptée à l'inférence locale Ollama :
+# - timeout long (un LLM 7B local est lent, surtout sans GPU dédié)
+# - max_workers=1 : pas de parallélisme, Ollama traite une requête à la fois
+#   (le parallélisme par défaut de RAGAS sature la file d'attente et provoque des timeouts)
+LOCAL_RUN_CONFIG = RunConfig(
+    timeout=600,       # 10 minutes par appel, large marge pour mistral local
+    max_workers=1,
+    max_retries=2,
+    max_wait=60,
+)
+
 
 def build_ragas_dataset() -> Dataset:
-    """
-    Exécute le pipeline RAG sur chaque question du eval set, et assemble
-    le format attendu par RAGAS : question, answer, contexts, ground_truth.
-    """
     records = []
 
     for i, item in enumerate(EVAL_SET, start=1):
@@ -45,12 +52,7 @@ def build_ragas_dataset() -> Dataset:
         print(f"[{i}/{len(EVAL_SET)}] {question}")
 
         result = answer_question(question)
-
-        # RAGAS attend les contextes comme une simple liste de strings
-        contexts = [
-            src.split(" — ", 1)[-1] if False else doc_text
-            for doc_text in _extract_context_texts(question)
-        ]
+        contexts = _extract_context_texts(question)
 
         records.append({
             "question": question,
@@ -63,7 +65,6 @@ def build_ragas_dataset() -> Dataset:
 
 
 def _extract_context_texts(question: str) -> list[str]:
-    """Récupère le texte brut des chunks utilisés (pas juste les références formatées)."""
     from rag.vectorstore import get_retriever
 
     retriever = get_retriever(top_k=5, score_threshold=0.5)
@@ -73,11 +74,11 @@ def _extract_context_texts(question: str) -> list[str]:
 
 def main():
     print(f"📊 Évaluation RAGAS — {len(EVAL_SET)} questions\n")
-    print("⚠️  Le LLM juge est local (mistral) — ça va être lent, comptez plusieurs minutes par question.\n")
+    print("⚠️  LLM juge local (mistral), exécution séquentielle — comptez 20-40 min au total.\n")
 
     dataset = build_ragas_dataset()
 
-    print("\n🔎 Exécution des métriques RAGAS...\n")
+    print("\n🔎 Exécution des métriques RAGAS (séquentiel, timeout 10 min/appel)...\n")
 
     judge_llm = LangchainLLMWrapper(
         ChatOllama(model=OLLAMA_LLM_MODEL, base_url=OLLAMA_BASE_URL, temperature=0.0)
@@ -91,6 +92,7 @@ def main():
         metrics=[faithfulness, answer_relevancy, context_precision, context_recall],
         llm=judge_llm,
         embeddings=judge_embeddings,
+        run_config=LOCAL_RUN_CONFIG,
     )
 
     df = result.to_pandas()
