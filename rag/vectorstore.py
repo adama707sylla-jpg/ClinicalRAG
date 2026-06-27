@@ -8,7 +8,7 @@ comme un Retriever LangChain standard, pour l'intégrer dans une chaîne LCEL.
 import os
 
 from dotenv import load_dotenv
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 
 load_dotenv()
