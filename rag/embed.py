@@ -62,20 +62,26 @@ def main():
     chunks = load_chunks()
     print(f"📦 {len(chunks)} chunks à vectoriser\n")
 
-    print(f"🔌 Connexion à Ollama ({OLLAMA_BASE_URL}, modèle: {OLLAMA_EMBEDDING_MODEL})")
+    print(
+        f"🔌 Connexion à Ollama ({OLLAMA_BASE_URL}, modèle: {OLLAMA_EMBEDDING_MODEL})"
+    )
     embedder = OllamaEmbeddings(model=OLLAMA_EMBEDDING_MODEL, base_url=OLLAMA_BASE_URL)
 
     collection = get_chroma_collection()
     existing_count = collection.count()
     if existing_count > 0:
-        print(f"⚠️  La collection contient déjà {existing_count} chunks. "
-              f"Ils seront ignorés s'ils ont le même ID (pas de doublons).\n")
+        print(
+            f"⚠️  La collection contient déjà {existing_count} chunks. "
+            f"Ils seront ignorés s'ils ont le même ID (pas de doublons).\n"
+        )
 
     for batch_start in tqdm(range(0, len(chunks), BATCH_SIZE), desc="Vectorisation"):
         batch = chunks[batch_start : batch_start + BATCH_SIZE]
 
         texts = [chunk["text"] for chunk in batch]
-        ids = [f"{chunk['source_type']}_{batch_start + i}" for i, chunk in enumerate(batch)]
+        ids = [
+            f"{chunk['source_type']}_{batch_start + i}" for i, chunk in enumerate(batch)
+        ]
         metadatas = [
             {**flatten_metadata(chunk["metadata"]), "source_type": chunk["source_type"]}
             for chunk in batch

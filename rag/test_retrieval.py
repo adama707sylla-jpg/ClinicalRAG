@@ -66,7 +66,7 @@ def display_results(query: str, results: dict):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python -m rag.test_retrieval \"ta question\"")
+        print('Usage: python -m rag.test_retrieval "ta question"')
         sys.exit(1)
 
     query = " ".join(sys.argv[1:])

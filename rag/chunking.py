@@ -21,8 +21,8 @@ GUIDELINES_PROCESSED_DIR = Path("ingestion/guidelines/processed")
 
 # Paramètres du découpage pour les guidelines (en caractères, pas en tokens,
 # pour rester simple — ~4 caractères ≈ 1 token en anglais/français)
-CHUNK_SIZE = 1500       # ≈ 375 tokens, bon compromis contexte/précision
-CHUNK_OVERLAP = 200     # ≈ 50 tokens, évite de couper une idée en plein milieu
+CHUNK_SIZE = 1500  # ≈ 375 tokens, bon compromis contexte/précision
+CHUNK_OVERLAP = 200  # ≈ 50 tokens, évite de couper une idée en plein milieu
 
 
 def chunk_pubmed_articles() -> list[dict]:
@@ -36,18 +36,20 @@ def chunk_pubmed_articles() -> list[dict]:
 
         for article in articles:
             text = f"{article['title']}\n\n{article['abstract']}"
-            chunks.append({
-                "text": text,
-                "source_type": "pubmed",
-                "metadata": {
-                    "pmid": article["pmid"],
-                    "title": article["title"],
-                    "journal": article["journal"],
-                    "year": article["year"],
-                    "topic": topic_name,
-                    "source_url": article["source_url"],
-                },
-            })
+            chunks.append(
+                {
+                    "text": text,
+                    "source_type": "pubmed",
+                    "metadata": {
+                        "pmid": article["pmid"],
+                        "title": article["title"],
+                        "journal": article["journal"],
+                        "year": article["year"],
+                        "topic": topic_name,
+                        "source_url": article["source_url"],
+                    },
+                }
+            )
 
     return chunks
 
@@ -59,7 +61,13 @@ def chunk_guidelines() -> list[dict]:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
-        separators=["\n\n", "\n", ". ", " ", ""],  # essaie de couper aux frontières naturelles
+        separators=[
+            "\n\n",
+            "\n",
+            ". ",
+            " ",
+            "",
+        ],  # essaie de couper aux frontières naturelles
     )
 
     for json_file in GUIDELINES_PROCESSED_DIR.glob("*.json"):
@@ -69,17 +77,19 @@ def chunk_guidelines() -> list[dict]:
         text_chunks = splitter.split_text(doc["full_text"])
 
         for i, chunk_text in enumerate(text_chunks):
-            chunks.append({
-                "text": chunk_text,
-                "source_type": "guideline",
-                "metadata": {
-                    "document_name": doc["name"],
-                    "title": doc["title"],
-                    "topic": doc["topic"],
-                    "chunk_index": i,
-                    "source_url": doc["source_url"],
-                },
-            })
+            chunks.append(
+                {
+                    "text": chunk_text,
+                    "source_type": "guideline",
+                    "metadata": {
+                        "document_name": doc["name"],
+                        "title": doc["title"],
+                        "topic": doc["topic"],
+                        "chunk_index": i,
+                        "source_url": doc["source_url"],
+                    },
+                }
+            )
 
     return chunks
 
@@ -90,7 +100,9 @@ def build_all_chunks() -> list[dict]:
     guideline_chunks = chunk_guidelines()
 
     print(f"📚 PubMed   : {len(pubmed_chunks)} chunks (1 par article)")
-    print(f"📋 Guidelines: {len(guideline_chunks)} chunks (découpage {CHUNK_SIZE} car., overlap {CHUNK_OVERLAP})")
+    print(
+        f"📋 Guidelines: {len(guideline_chunks)} chunks (découpage {CHUNK_SIZE} car., overlap {CHUNK_OVERLAP})"
+    )
     print(f"📦 Total    : {len(pubmed_chunks) + len(guideline_chunks)} chunks")
 
     return pubmed_chunks + guideline_chunks

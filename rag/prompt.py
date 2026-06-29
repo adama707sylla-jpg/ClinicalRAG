@@ -39,7 +39,9 @@ CONTEXTE ({num_sources} extraits) :
 {context}
 """
 
-RAG_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PROMPT),
-    ("human", "{question}"),
-])
+RAG_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        ("system", SYSTEM_PROMPT),
+        ("human", "{question}"),
+    ]
+)

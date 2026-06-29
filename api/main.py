@@ -21,7 +21,9 @@ from rag.vectorstore import OLLAMA_EMBEDDING_MODEL, get_vectorstore
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger("clinicalrag")
 
 app = FastAPI(
@@ -87,7 +89,7 @@ def ask(request: QuestionRequest):
         raise HTTPException(
             status_code=500,
             detail="Erreur interne lors du traitement de la question. "
-                   "Vérifie que Ollama est démarré et accessible.",
+            "Vérifie que Ollama est démarré et accessible.",
         )
 
     elapsed = time.time() - start_time

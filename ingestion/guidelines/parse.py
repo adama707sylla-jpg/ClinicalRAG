@@ -116,18 +116,24 @@ def main():
             json.dump(output, f, ensure_ascii=False, indent=2)
 
         char_count = len(parsed["full_text"])
-        print(f"   ✅ {parsed['usable_pages']}/{parsed['total_pages']} pages exploitables, "
-              f"{char_count:,} caractères → {output_path}\n")
+        print(
+            f"   ✅ {parsed['usable_pages']}/{parsed['total_pages']} pages exploitables, "
+            f"{char_count:,} caractères → {output_path}\n"
+        )
 
-        summary.append({
-            "name": name,
-            "pages": parsed["usable_pages"],
-            "chars": char_count,
-        })
+        summary.append(
+            {
+                "name": name,
+                "pages": parsed["usable_pages"],
+                "chars": char_count,
+            }
+        )
 
     total_chars = sum(s["chars"] for s in summary)
     print(f"{'='*50}")
-    print(f"✅ TERMINÉ — {len(summary)} guidelines parsées, {total_chars:,} caractères au total")
+    print(
+        f"✅ TERMINÉ — {len(summary)} guidelines parsées, {total_chars:,} caractères au total"
+    )
     print(f"{'='*50}")
     for s in summary:
         print(f"  {s['name']:40s} {s['pages']:3d} pages  {s['chars']:>8,} car.")

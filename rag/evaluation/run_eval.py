@@ -37,7 +37,7 @@ RESULTS_PATH = "rag/evaluation/results.csv"
 # - max_workers=1 : pas de parallélisme, Ollama traite une requête à la fois
 #   (le parallélisme par défaut de RAGAS sature la file d'attente et provoque des timeouts)
 LOCAL_RUN_CONFIG = RunConfig(
-    timeout=600,       # 10 minutes par appel, large marge pour mistral local
+    timeout=600,  # 10 minutes par appel, large marge pour mistral local
     max_workers=1,
     max_retries=2,
     max_wait=60,
@@ -54,12 +54,14 @@ def build_ragas_dataset() -> Dataset:
         result = answer_question(question)
         contexts = _extract_context_texts(question)
 
-        records.append({
-            "question": question,
-            "answer": result["answer"],
-            "contexts": contexts,
-            "ground_truth": item["ground_truth"],
-        })
+        records.append(
+            {
+                "question": question,
+                "answer": result["answer"],
+                "contexts": contexts,
+                "ground_truth": item["ground_truth"],
+            }
+        )
 
     return Dataset.from_list(records)
 
@@ -74,7 +76,9 @@ def _extract_context_texts(question: str) -> list[str]:
 
 def main():
     print(f"📊 Évaluation RAGAS — {len(EVAL_SET)} questions\n")
-    print("⚠️  LLM juge local (mistral), exécution séquentielle — comptez 20-40 min au total.\n")
+    print(
+        "⚠️  LLM juge local (mistral), exécution séquentielle — comptez 20-40 min au total.\n"
+    )
 
     dataset = build_ragas_dataset()
 
@@ -101,13 +105,27 @@ def main():
     print("\n" + "=" * 70)
     print("📊 RÉSULTATS RAGAS")
     print("=" * 70)
-    print(df[["question", "faithfulness", "answer_relevancy", "context_precision", "context_recall"]]
-          .to_string(index=False))
+    print(
+        df[
+            [
+                "question",
+                "faithfulness",
+                "answer_relevancy",
+                "context_precision",
+                "context_recall",
+            ]
+        ].to_string(index=False)
+    )
 
     print("\n" + "=" * 70)
     print("📈 MOYENNES")
     print("=" * 70)
-    for metric in ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]:
+    for metric in [
+        "faithfulness",
+        "answer_relevancy",
+        "context_precision",
+        "context_recall",
+    ]:
         print(f"  {metric:20s} {df[metric].mean():.3f}")
 
     print(f"\n✅ Résultats détaillés sauvegardés → {RESULTS_PATH}")

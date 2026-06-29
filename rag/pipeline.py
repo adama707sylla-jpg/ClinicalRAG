@@ -73,12 +73,7 @@ def build_chain():
             "num_sources_plus_one": num_sources + 1,
         }
 
-    generation_chain = (
-        assemble_prompt_inputs
-        | RAG_PROMPT
-        | llm
-        | StrOutputParser()
-    )
+    generation_chain = assemble_prompt_inputs | RAG_PROMPT | llm | StrOutputParser()
 
     return retrieval_chain, generation_chain
 
@@ -92,7 +87,7 @@ def answer_question(question: str) -> dict:
     if not docs:
         return {
             "answer": "Aucune source pertinente n'a été trouvée dans la base documentaire "
-                       "pour répondre à cette question.",
+            "pour répondre à cette question.",
             "sources": [],
             "num_sources": 0,
         }

@@ -40,7 +40,9 @@ SLEEP_BETWEEN_CALLS = 0.4 if not NCBI_API_KEY else 0.12
 
 def search_pmids(query: str, max_results: int) -> list[str]:
     """Récupère la liste des PMIDs correspondant à une requête Entrez."""
-    handle = Entrez.esearch(db="pubmed", term=query, retmax=max_results, sort="relevance")
+    handle = Entrez.esearch(
+        db="pubmed", term=query, retmax=max_results, sort="relevance"
+    )
     record = Entrez.read(handle)
     handle.close()
     return record["IdList"]
@@ -132,7 +134,7 @@ def main():
         print(f"   → {len(pmids)} PMIDs trouvés")
 
         if not pmids:
-            print(f"   ⚠️  Aucun résultat, on passe au suivant\n")
+            print("   ⚠️  Aucun résultat, on passe au suivant\n")
             continue
 
         articles = fetch_articles(pmids)
